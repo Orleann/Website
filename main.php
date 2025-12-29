@@ -14,7 +14,7 @@
         <div class="site">
             <header>
                 <div class="header">
-                    Sigma notes
+                    Sigma notesss
                 </div>
             </header>
             <main>
