@@ -2,16 +2,23 @@
     .close-sidebar{
         color: blueviolet;
     }
-
-    a{
-        color: white;
+    .a{
+        color: blueviolet;
+    }
+    .sidebar-submenu{
+        display: none;
+    }
+    i{
+        color: blueviolet;
     }
 </style>
 
 <nav id="sidebar" class="sidebar-wrapper">
     <div class="sidebar-content" style="background-color: #000000ff;">
         <div class="sidebar-brand">
-            <div id = "close-sidebar" class="close-sidebar"><i class="fas fa-times"></i></div>
+            <div id = "close-sidebar" class="close-sidebar">
+                <i class="fas fa-times" "></i>
+            </div>
         </div>
         <div class="sidebar-header">
             <div class="user-info">
@@ -31,7 +38,7 @@
         <div class="sidebar-menu">
         <ul>
             <li class="sidebar-dropdown">
-                <a href="#"><i class="fa fa-tachometer-alt"></i><span>Notatki</span></a>
+                <a href="#"><i class="fa fa-sticky-note"></i><span>Notatki</span></a>
                 <div class="sidebar-submenu">
                     <ul>
                         <li><a href="#">Notatka 1</a></li>
@@ -41,7 +48,7 @@
                 </div>
             </li>
             <li class="sidebar-dropdown">
-                <a href="#"><i class="fa fa-shopping-cart"></i><span>Kategorie</span></a>
+                <a href="#"><i class="fa fa-file-alt"></i><span>Kategorie</span></a>
                 <div class="sidebar-submenu">
                     <ul>
                         <li><a href="#">Kategoria 1</a></li>
@@ -51,21 +58,21 @@
                 </div>
             </li>
             <li class="sidebar-dropdown">
-            <a href="#"><i class="far fa-gem"></i><span>Statystki</span></a>
+            <a href="#"><i class="far fa-chart-bar"></i><span>Statystki</span></a>
             </li>
             
             <li class="sidebar-dropdown">
-            <a href="#"><i class="fa fa-chart-line"></i><span>Pomoc</span></a>
+            <a href="#"><i class="fa fa-question"></i><span>Pomoc</span></a>
             <div class="sidebar-submenu">
                 
             </div>
             </li>
             
             <li class="sidebar-dropdown">
-            <a href="#"><i class="fa fa-globe"></i><span>Ustawienia</span></a>
+            <a href="#"><i class="fa fa-wrench"></i><span>Ustawienia</span></a>
             </li>
             <li class="sidebar-dropdown">
-            <a href="#"><i class="fa fa-globe"></i><span>Konto</span></a>
+            <a href="#"><i class="fa fa-user-circle"></i><span>Konto</span></a>
             </li>
 
         </ul>
