@@ -1,13 +1,16 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <link rel="stylesheet" href="assets/css/sidebar.css">
+<link rel="stylesheet" href="assets/css/index.css">
+
+<title>Sigma Notes</title>
 
 <?php
     if(!isset($_GET["site"])){
         $site = 'main';
     }
-    else ($site = $_GET["site"]);
-    $ext = $site . '.php';
+    else { $site = $_GET["site"]; }
+    $path = __DIR__ . '/assets/site/' . $site . '.php';
 ?>
 
 <div class="page-wrapper chiller-theme">
@@ -29,8 +32,14 @@
       <hr>
     </div>
   </main>
-  <div class = "page-content">
-    <?php include 'assets/site/' . $ext; ?>
+  <div class = "page-content" style="text-align: center;">
+    <?php 
+      if(file_exists($path)){
+        include $path;
+      } else {
+        echo "404 - Plik : " . htmlspecialchars($site) . ' nie istnieje.';
+      }
+    ?>
   </div>
 </div>
 
