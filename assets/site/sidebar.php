@@ -47,6 +47,6 @@
         </li>
         <li class="sidebar-dropdown">
             <a href="?site=help"><i class="fa fa-question-circle"></i><span>Pomoc</span></a>
-        </li>
+        </li>   
     </ul>
 </div>
