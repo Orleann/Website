@@ -21,6 +21,7 @@
             <div class="sidebar-submenu">
                 <ul>
                     <li><a href="?site=notes">Wszystkie notatki</a></li>
+                    <li><a href="?site=subsite/fav">Ulubione notatki</a></li>
                     <li><a href="?site=subsite/new_note">Napisz nową notatkę</a></li>
                 </ul>
             </div>
@@ -43,6 +44,9 @@
         </li>
         <li class="sidebar-dropdown">
             <a href="?site=account"><i class="fa fa-user-circle"></i><span>Konto</span></a>
+        </li>
+        <li class="sidebar-dropdown">
+            <a href="?site=help"><i class="fa fa-question-circle"></i><span>Pomoc</span></a>
         </li>
     </ul>
 </div>

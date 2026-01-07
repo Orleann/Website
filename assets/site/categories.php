@@ -1,1 +1,1 @@
-Kategorie
+lista kategorii

@@ -4,6 +4,18 @@
 
 <title>Sigma Notes</title>
 
+<style>
+  .page-wrapper{
+    background-color: black;
+    color: blueviolet;
+    text-align: center;
+  }
+  a{
+    color: blueviolet;
+  }
+
+</style>
+
 <?php
     if(!isset($_GET["site"])){
         $site = 'main';
