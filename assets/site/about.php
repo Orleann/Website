@@ -1,0 +1,1 @@
+Prezentacja informacji o aplikacji.
