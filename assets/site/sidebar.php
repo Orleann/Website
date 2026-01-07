@@ -51,5 +51,8 @@
         <li class="sidebar-dropdown">
             <a href="?site=about"><i class="fa fa-info-circle"></i><span>O Aplikacji</span></a>
         </li>
+        <li class="sidebar-dropdown">
+            <a href="?site=pacman"><i class="fa fa-gamepad"></i><span>Pac-Man</span></a>
+        </li>
     </ul>
 </div>
