@@ -12,6 +12,12 @@
         <div style="display: inline-block; background: rgba(102, 126, 234, 0.1); padding: 15px 25px; border-radius: 10px; margin: 10px;">
             <strong>Pozostało celów:</strong> <span id="targetsLeft">10</span>
         </div>
+        <div style="display: inline-block; background: rgba(102, 126, 234, 0.1); padding: 15px 25px; border-radius: 10px; margin: 10px;">
+            <strong>Zdrowie:</strong> <span id="health">100</span> HP
+        </div>
+        <div style="display: inline-block; background: rgba(102, 126, 234, 0.1); padding: 15px 25px; border-radius: 10px; margin: 10px;">
+            <strong>Zabici:</strong> <span id="enemiesKilled">0</span>
+        </div>
         <button id="startBtn" class="btn-modern" style="margin: 10px;">
             <i class="fas fa-play"></i> Start
         </button>
@@ -64,18 +70,24 @@ let gameState = {
     shots: 0,
     targetsLeft: 10,
     gameRunning: false,
-    gameOver: false
+    gameOver: false,
+    playerHealth: 100,
+    enemiesKilled: 0
 };
 
 // Three.js zmienne
 let scene, camera, renderer;
 let targets = [];
 let walls = [];
+let enemies = [];
 let raycaster, mouse;
 let controls = {
     yaw: 0,
     pitch: 0
 };
+
+// Przeciwnicy
+let enemyShootTimer = 0;
 
 // Model broni (obrazek 2D)
 let weaponImage = null;
@@ -324,6 +336,11 @@ function createEnvironment() {
     
     // Inicjalizuj obrazek broni
     initWeaponImage();
+    
+    // Utwórz przeciwników (po inicjalizacji kamery)
+    setTimeout(() => {
+        createEnemies();
+    }, 100);
 }
 
 function createTargets() {
@@ -356,6 +373,204 @@ function createTargets() {
         
         scene.add(target);
         targets.push(target);
+    }
+}
+
+function createEnemies() {
+    if (!scene || !camera) return; // Sprawdź czy wszystko jest zainicjalizowane
+    
+    try {
+        // Usuń starych przeciwników
+        enemies.forEach(enemy => {
+            if (enemy.mesh) scene.remove(enemy.mesh);
+            if (enemy.healthBar) scene.remove(enemy.healthBar);
+        });
+        enemies = [];
+        
+        // Utwórz przeciwników
+        const numEnemies = 5;
+        const enemyPositions = [
+            {x: -5, z: -5},
+            {x: 5, z: -5},
+            {x: -5, z: 5},
+            {x: 5, z: 5},
+            {x: 0, z: 0}
+        ];
+        
+        for (let i = 0; i < numEnemies; i++) {
+            const pos = enemyPositions[i] || {
+                x: (Math.random() - 0.5) * 15,
+                z: (Math.random() - 0.5) * 15
+            };
+            
+            // Ciało przeciwnika (użyj CylinderGeometry zamiast CapsuleGeometry)
+            const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.3, 1.2, 8);
+            const bodyMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xff4444,
+                roughness: 0.7,
+                metalness: 0.1
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.set(0, 0.9, 0);
+            body.castShadow = true;
+            body.receiveShadow = true;
+            
+            // Głowa przeciwnika
+            const headGeometry = new THREE.SphereGeometry(0.25, 16, 16);
+            const headMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffaaaa,
+                roughness: 0.6,
+                metalness: 0.1
+            });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.set(0, 1.8, 0);
+            head.castShadow = true;
+            head.receiveShadow = true;
+            
+            // Grupa przeciwnika
+            const enemyGroup = new THREE.Group();
+            enemyGroup.add(body);
+            enemyGroup.add(head);
+            enemyGroup.position.set(pos.x, 0, pos.z);
+            
+            // Pasek zdrowia (prosty box)
+            const healthBarGeometry = new THREE.BoxGeometry(0.6, 0.1, 0.05);
+            const healthBarMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const healthBar = new THREE.Mesh(healthBarGeometry, healthBarMaterial);
+            healthBar.position.set(pos.x, 2.2, pos.z);
+            // Nie używaj lookAt tutaj - będzie aktualizowane w updateEnemies
+            
+            scene.add(enemyGroup);
+            scene.add(healthBar);
+            
+            enemies.push({
+                mesh: enemyGroup,
+                healthBar: healthBar,
+                health: 100,
+                maxHealth: 100,
+                position: new THREE.Vector3(pos.x, 0, pos.z),
+                targetPosition: new THREE.Vector3(pos.x, 0, pos.z),
+                speed: 0.02,
+                lastShot: 0,
+                shootCooldown: 2000 // 2 sekundy między strzałami
+            });
+        }
+    } catch (error) {
+        console.error('Błąd podczas tworzenia przeciwników:', error);
+    }
+}
+
+function updateEnemies() {
+    if (!gameState.gameRunning) return;
+    
+    const now = Date.now();
+    enemyShootTimer += 16; // ~60 FPS
+    
+    enemies.forEach((enemy, index) => {
+        if (enemy.health <= 0) return; // Martwy przeciwnik
+        
+        // Poruszanie się (prosta AI - losowe chodzenie)
+        if (Math.random() < 0.01) {
+            // Losowy nowy cel
+            enemy.targetPosition.set(
+                (Math.random() - 0.5) * 15,
+                0,
+                (Math.random() - 0.5) * 15
+            );
+        }
+        
+        // Ruch w kierunku celu
+        const direction = new THREE.Vector3()
+            .subVectors(enemy.targetPosition, enemy.position)
+            .normalize();
+        
+        const distance = enemy.position.distanceTo(enemy.targetPosition);
+        if (distance > 0.5) {
+            enemy.position.add(direction.multiplyScalar(enemy.speed));
+            enemy.mesh.position.copy(enemy.position);
+        }
+        
+        // Patrz na gracza
+        const lookDirection = new THREE.Vector3()
+            .subVectors(camera.position, enemy.mesh.position)
+            .normalize();
+        
+        enemy.mesh.lookAt(
+            enemy.mesh.position.x + lookDirection.x,
+            enemy.mesh.position.y,
+            enemy.mesh.position.z + lookDirection.z
+        );
+        
+        // Strzelanie do gracza
+        const distanceToPlayer = enemy.mesh.position.distanceTo(camera.position);
+        if (distanceToPlayer < 15 && now - enemy.lastShot > enemy.shootCooldown) {
+            // Sprawdź czy gracz jest w linii wzroku
+            const enemyRaycaster = new THREE.Raycaster();
+            enemyRaycaster.set(
+                enemy.mesh.position.clone().add(new THREE.Vector3(0, 1.6, 0)),
+                lookDirection
+            );
+            
+            const intersects = enemyRaycaster.intersectObjects([camera]);
+            if (intersects.length > 0 || Math.random() < 0.3) { // 30% szans na trafienie
+                // Strzał przeciwnika
+                enemyShoot(enemy);
+                enemy.lastShot = now;
+            }
+        }
+        
+        // Aktualizuj pasek zdrowia
+        const healthPercent = enemy.health / enemy.maxHealth;
+        enemy.healthBar.scale.x = healthPercent;
+        enemy.healthBar.material.color.setHex(
+            healthPercent > 0.5 ? 0x00ff00 : healthPercent > 0.25 ? 0xffff00 : 0xff0000
+        );
+        
+        // Pozycjonuj pasek zdrowia nad głową
+        enemy.healthBar.position.copy(enemy.mesh.position);
+        enemy.healthBar.position.y += 2.2;
+        enemy.healthBar.lookAt(camera.position);
+    });
+}
+
+function enemyShoot(enemy) {
+    // Dźwięk strzału przeciwnika (cichszy, z opóźnieniem)
+    setTimeout(() => {
+        if (audioContext) {
+            const now = audioContext.currentTime;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.exponentialRampToValueAtTime(40, now + 0.08);
+            
+            gain.gain.setValueAtTime(0.2, now); // Cichszy niż strzał gracza
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.start(now);
+            osc.stop(now + 0.1);
+        }
+    }, 50);
+    
+    // Sprawdź czy trafił gracza
+    const distanceToPlayer = enemy.mesh.position.distanceTo(camera.position);
+    const hitChance = Math.max(0.05, 0.3 - distanceToPlayer / 30); // Im dalej, tym mniejsza szansa
+    
+    if (Math.random() < hitChance) {
+        // Trafienie w gracza
+        const damage = 8 + Math.random() * 12; // 8-20 obrażeń
+        gameState.playerHealth -= damage;
+        
+        if (gameState.playerHealth <= 0) {
+            gameState.playerHealth = 0;
+            endGame('Zostałeś zabity!');
+        }
+        
+        updateUI();
     }
 }
 
@@ -398,8 +613,11 @@ function startGame() {
         gameState.hits = 0;
         gameState.shots = 0;
         gameState.targetsLeft = 10;
+        gameState.playerHealth = 100;
+        gameState.enemiesKilled = 0;
         
         createTargets();
+        createEnemies();
         updateUI();
         document.getElementById('gameOver').style.display = 'none';
         
@@ -415,6 +633,8 @@ function resetGame() {
     gameState.targetsLeft = 10;
     gameState.gameRunning = false;
     gameState.gameOver = false;
+    gameState.playerHealth = 100;
+    gameState.enemiesKilled = 0;
     
     controls.yaw = 0;
     controls.pitch = 0;
@@ -618,15 +838,33 @@ function onMouseClick(event) {
     
     // Strzał z kamery
     raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-    const intersects = raycaster.intersectObjects(targets);
+    
+    // Funkcja pomocnicza do sprawdzania czy obiekt jest częścią przeciwnika
+    function isPartOfEnemy(obj, enemy) {
+        if (obj === enemy.mesh) return true;
+        if (enemy.mesh.children.includes(obj)) return true;
+        // Sprawdź rekurencyjnie
+        for (let child of enemy.mesh.children) {
+            if (child === obj || child.children.includes(obj)) return true;
+        }
+        return false;
+    }
+    
+    // Sprawdź trafienia w cele
+    const targetIntersects = raycaster.intersectObjects(targets, false);
+    
+    // Sprawdź trafienia w przeciwników (z rekurencją dla dzieci)
+    const enemyMeshes = enemies.map(e => e.mesh);
+    const enemyIntersects = raycaster.intersectObjects(enemyMeshes, true); // true = recursive
     
     // Dźwięk strzału (zawsze odtwarzany)
     playGunshot();
     
-    if (intersects.length > 0) {
-        const hitTarget = intersects[0].object;
+    // Najpierw sprawdź cele (priorytet)
+    if (targetIntersects.length > 0) {
+        const hitTarget = targetIntersects[0].object;
         if (hitTarget.userData.isTarget) {
-            // Trafienie!
+            // Trafienie w cel!
             gameState.hits++;
             gameState.score += 100;
             gameState.targetsLeft--;
@@ -644,6 +882,61 @@ function onMouseClick(event) {
             if (gameState.targetsLeft === 0) {
                 endGame('Wszystkie cele zniszczone!');
             }
+            
+            updateUI();
+            return;
+        }
+    }
+    
+    // Sprawdź trafienia w przeciwników
+    if (enemyIntersects.length > 0) {
+        const hitObject = enemyIntersects[0].object;
+        
+        // Znajdź którego przeciwnika trafiono
+        let hitEnemy = null;
+        for (let enemy of enemies) {
+            if (isPartOfEnemy(hitObject, enemy)) {
+                hitEnemy = enemy;
+                break;
+            }
+        }
+        
+        if (hitEnemy && hitEnemy.health > 0) {
+            // Sprawdź czy trafiono w głowę (więcej obrażeń)
+            const isHeadshot = hitObject.geometry && hitObject.geometry.type === 'SphereGeometry';
+            const damage = isHeadshot ? 
+                50 + Math.random() * 30 : // 50-80 obrażeń za headshot
+                25 + Math.random() * 25;  // 25-50 obrażeń za body shot
+            
+            hitEnemy.health -= damage;
+            
+            gameState.hits++;
+            gameState.score += isHeadshot ? 100 : 50; // Więcej punktów za headshot
+            
+            console.log(`Trafienie! Headshot: ${isHeadshot}, Obrażenia: ${damage.toFixed(1)}, HP przeciwnika: ${hitEnemy.health.toFixed(1)}`);
+            
+            // Dodatkowy dźwięk trafienia
+            setTimeout(() => {
+                playSound(isHeadshot ? 1500 : 1000, 0.1, 'square');
+            }, 50);
+            
+            // Jeśli przeciwnik zmarł
+            if (hitEnemy.health <= 0) {
+                hitEnemy.health = 0;
+                gameState.enemiesKilled++;
+                gameState.score += 200; // Bonus za zabicie
+                
+                // Usuń przeciwnika po krótkim czasie
+                setTimeout(() => {
+                    if (hitEnemy.mesh) scene.remove(hitEnemy.mesh);
+                    if (hitEnemy.healthBar) scene.remove(hitEnemy.healthBar);
+                    // Usuń z tablicy
+                    const index = enemies.indexOf(hitEnemy);
+                    if (index > -1) enemies.splice(index, 1);
+                }, 1000);
+            }
+            
+            updateUI();
         }
     }
     
@@ -659,7 +952,9 @@ function endGame(message) {
     document.getElementById('gameOverText').textContent = message;
     document.getElementById('finalStats').innerHTML = `
         <strong>Wynik:</strong> ${gameState.score} punktów<br>
-        <strong>Celność:</strong> ${accuracy}% (${gameState.hits}/${gameState.shots})
+        <strong>Celność:</strong> ${accuracy}% (${gameState.hits}/${gameState.shots})<br>
+        <strong>Zabici przeciwnicy:</strong> ${gameState.enemiesKilled}<br>
+        <strong>Zdrowie:</strong> ${Math.floor(gameState.playerHealth)} HP
     `;
     document.getElementById('gameOver').style.display = 'block';
     
@@ -673,6 +968,18 @@ function updateUI() {
     document.getElementById('hits').textContent = gameState.hits;
     document.getElementById('shots').textContent = gameState.shots;
     document.getElementById('targetsLeft').textContent = gameState.targetsLeft;
+    document.getElementById('health').textContent = Math.max(0, Math.floor(gameState.playerHealth));
+    document.getElementById('enemiesKilled').textContent = gameState.enemiesKilled;
+    
+    // Zmień kolor zdrowia w zależności od wartości
+    const healthElement = document.getElementById('health');
+    if (gameState.playerHealth > 60) {
+        healthElement.style.color = '#00ff00';
+    } else if (gameState.playerHealth > 30) {
+        healthElement.style.color = '#ffff00';
+    } else {
+        healthElement.style.color = '#ff0000';
+    }
 }
 
 function animate() {
@@ -686,6 +993,9 @@ function animate() {
         
         // Poruszaj gracza
         movePlayer();
+        
+        // Aktualizuj przeciwników
+        updateEnemies();
         
         // Animuj cele (obracanie)
         targets.forEach(target => {
