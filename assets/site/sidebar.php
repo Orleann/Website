@@ -54,5 +54,11 @@
         <li class="sidebar-dropdown">
             <a href="?site=pacman"><i class="fa fa-gamepad"></i><span>Pac-Man</span></a>
         </li>
+        <li class="sidebar-dropdown">
+            <a href="?site=snake"><i class="fa fa-gamepad"></i><span>Snake</span></a>
+        </li>
+        <li class="sidebar-dropdown">
+            <a href="?site=csgo"><i class="fa fa-crosshairs"></i><span>CS:GO Style</span></a>
+        </li>
     </ul>
 </div>
