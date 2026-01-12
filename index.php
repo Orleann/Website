@@ -12,7 +12,6 @@
     text-align: center;
   }
 
-
   .page-wrapper{
     background-color: #0e0532ff;
     color: #e0e0e0;
@@ -48,8 +47,7 @@
     $path = __DIR__ . '/assets/site/' . $site . '.php';
 ?>
 
-<html
-  <div class="page-wrapper chiller-theme">
+<div class="page-wrapper chiller-theme">
   <a id="show-sidebar" class="btn btn-sm btn-dark" href="#">
     <i class="fas fa-bars"></i>
   </a>
@@ -78,7 +76,6 @@
     ?>
   </div>
 </div>
-</html>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>

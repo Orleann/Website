@@ -1,10 +1,13 @@
-<link rel="stylesheet" href="/assets/site/account.css">
+<?php
+$host = 'innowacyjne-projekty-inf.mysql.database.azure.com';
+$db = 'sigma';
+$user = 'azure';
+$password = 'PgEEcgO80UC9ix';
+$port = '3306';
 
-<form autocomplete="off">
-  <div id="focus"></div>
-  <h1>Zaloguj się na konto</h1>
-  <input type="text" half placeholder="Nazwa Użytkownika" autocomplete="no">
-  <input type="text" placeholder="Hasło" autocomplete="no">
-  <input type="text" placeholder="Mail" autocomplete="no">
-  <input type="submit" value="Zaloguj się">
-</form>
+$conn = new mysqli($host, $user, $password, $db, $port);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+

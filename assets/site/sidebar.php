@@ -48,7 +48,7 @@
         <li class="sidebar-dropdown">
             <a href="?site=help"><i class="fa fa-question-circle"></i><span>Pomoc</span></a>
         </li>   
-        <li class="sidebar-dropdown">`
+        <li class="sidebar-dropdown">
             <a href="?site=about"><i class="fa fa-info-circle"></i><span>O Aplikacji</span></a>
         </li>
     </ul>
