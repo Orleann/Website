@@ -1,13 +1,15 @@
-<?php
-$host = 'innowacyjne-projekty-inf.mysql.database.azure.com';
-$db = 'sigma';
-$user = 'azure';
-$password = 'PgEEcgO80UC9ix';
-$port = '3306';
+<html>
 
-$conn = new mysqli($host, $user, $password, $db, $port);
+XD TEMPORARY SPRAWDZAMY CZY DZIAŁA XD
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
+<div class = "Login">
+    <h2 class="text-2xl font-semibold">Logowanie</h2>
+    <form class="mt-8" action="assets/site/subsite/login.php" method="POST">
+        <label for="username" >Login</label>
+        <input type="text" id="username" name="username" placeholder="Nazwa użytkownika">
+        <label for="password">Hasło</label>
+        <input type="password" id="password" name="password" placeholder="Hasło" >
+        <button type="submit">Zaloguj się</button>
+    </form>
+</div>
+</html>
