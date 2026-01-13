@@ -90,7 +90,7 @@
     <i class="fas fa-bars text-lg"></i>
   </a>
   
-  <nav id="sidebar" class="sidebar-wrapper">
+  <nav id="sidebar" class="sidebar-wrapper glass-dark">
     <div class="sidebar-content">
       <div class="sidebar-brand">
         <div id="close-sidebar" class="cursor-pointer hover:rotate-90 transition-transform duration-300"><i class="fas fa-times text-white text-xl"></i></div>
